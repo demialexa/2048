@@ -42,6 +42,11 @@ int main() {
         }
         display.DrawTile(3, 1.5 + y, ETileType::TILE_64);
 
+        // Example: win message
+        if (y < -1 || y > 1) {
+            display.DrawWinMessage();
+        }
+
         display.Render();
     }
     return 0;

@@ -30,6 +30,7 @@ public:
     virtual ~TDisplay();
 
     void DrawTile(float x, float y, ETileType type);
+    void DrawWinMessage();
 
     double GetTime() const;
     bool IsKeyPressed(EKey key) const;
