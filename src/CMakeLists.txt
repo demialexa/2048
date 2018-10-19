@@ -9,4 +9,7 @@ set(CMAKE_CXX_STANDARD 14)
 add_subdirectory(bin)
 add_subdirectory(googletest)
 add_subdirectory(display)
-add_subdirectory(glfw-3.2.1)
+
+IF(WIN32)
+    add_subdirectory(glfw-3.2.1)
+ENDIF()
