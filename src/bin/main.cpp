@@ -17,10 +17,10 @@ int main() {
         display.DrawTile(0, 1, ETileType::TILE_2);
         display.DrawTile(0, 2, ETileType::TILE_4);
         display.DrawTile(0, 3, ETileType::TILE_8);
-        display.DrawTile(1, 0, ETileType::TILE_16);
+        display.DrawTile(1, 0, ETileType::TILE_16, 0.4);
         display.DrawTile(1, 1, ETileType::TILE_32);
         display.DrawTile(1, 2, ETileType::TILE_64);
-        display.DrawTile(1, 3, ETileType::TILE_128);
+        display.DrawTile(1, 3, ETileType::TILE_128, 0.8);
         display.DrawTile(2, 0, ETileType::TILE_256);
         display.DrawTile(2, 1, ETileType::TILE_512);
         display.DrawTile(2, 2, ETileType::TILE_1024);

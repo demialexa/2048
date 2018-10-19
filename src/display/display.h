@@ -29,7 +29,7 @@ public:
     TDisplay();
     virtual ~TDisplay();
 
-    void DrawTile(float x, float y, ETileType type);
+    void DrawTile(float x, float y, ETileType type, float alpha = 1.0f);
     void DrawWinMessage();
 
     double GetTime() const;

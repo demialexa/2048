@@ -14,7 +14,7 @@ public:
     TImpl();
     ~TImpl();
 
-    void DrawTile(float x, float y, ETileType type);
+    void DrawTile(float x, float y, ETileType type, float alpha);
     void DrawWinMessage();
 
     bool IsKeyPressed(EKey key) const;
@@ -34,11 +34,13 @@ private:
         float x;
         float y;
         ETileType type;
+        float alpha;
 
-        TTile(float x, float y, ETileType type)
+        TTile(float x, float y, ETileType type, float alpha)
             : x(x)
             , y(y)
-            , type(type) {}
+            , type(type)
+            , alpha(alpha) {}
     };
 
     GLFWwindow* Window;
@@ -127,8 +129,8 @@ unsigned TDisplay::TImpl::LoadTexture(const std::string& filename) {
     return textureId;
 }
 
-void TDisplay::TImpl::DrawTile(float x, float y, ETileType type) {
-    Tiles.emplace_back(x, y, type);
+void TDisplay::TImpl::DrawTile(float x, float y, ETileType type, float alpha) {
+    Tiles.emplace_back(x, y, type, alpha);
 }
 
 void TDisplay::TImpl::DrawWinMessage() {
@@ -178,7 +180,7 @@ void TDisplay::TImpl::Render() {
 
     for (const auto& tile : Tiles) {
         glBindTexture(GL_TEXTURE_2D, TileTextures[tile.type]);
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+        glColor4f(1.0f, 1.0f, 1.0f, tile.alpha);
         glBegin(GL_QUADS);
         glTexCoord2f(0.0f,  1.0f);
         glVertex2f(tile.y - 0.5f, tile.x + 0.5f);
@@ -217,8 +219,8 @@ TDisplay::TDisplay()
 
 TDisplay::~TDisplay() {}
 
-void TDisplay::DrawTile(float x, float y, ETileType type) {
-    Impl->DrawTile(x, y, type);
+void TDisplay::DrawTile(float x, float y, ETileType type, float alpha) {
+    Impl->DrawTile(x, y, type, alpha);
 }
 
 void TDisplay::DrawWinMessage() {
