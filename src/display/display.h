@@ -24,6 +24,15 @@ enum class EKey {
     KEY_RIGHT,
 };
 
+namespace std {
+    template<>
+    struct hash<ETileType> {
+        size_t operator()(const ETileType& tile) const {
+             return static_cast<size_t>(tile);
+        }
+    };
+}
+
 class TDisplay {
 public:
     TDisplay();
