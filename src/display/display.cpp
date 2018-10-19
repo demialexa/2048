@@ -93,7 +93,9 @@ void TDisplay::TImpl::InitOpenGL() {
     glEnable(GL_BLEND);
     glDisable(GL_ALPHA_TEST);
     glEnable(GL_TEXTURE_2D);
+#ifndef WIN32
     glEnable(GL_MULTISAMPLE);
+#endif
 }
 
 void TDisplay::TImpl::InitTextures() {
