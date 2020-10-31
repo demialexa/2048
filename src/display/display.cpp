@@ -9,242 +9,240 @@
 #include <unordered_map>
 #include <stdexcept>
 
-class TDisplay::TImpl {
-public:
-    TImpl();
-    ~TImpl();
+class Display::Impl {
+ public:
+  Impl();
+  ~Impl();
 
-    void DrawTile(float x, float y, ETileType type, float alpha);
-    void DrawWinMessage();
+  void DrawTile(float x, float y, Tiles type, float alpha);
+  void DrawWinMessage();
 
-    bool IsKeyPressed(EKey key) const;
-    bool Closed() const;
-    void ProcessEvents();
-    void Render();
+  bool IsKeyPressed(Keys key) const;
+  bool Closed() const;
+  void ProcessEvents();
+  void Render();
 
-private:
-    void InitWindow();
-    void InitOpenGL();
-    void InitTextures();
+ private:
+  struct Tile {
+    float x;
+    float y;
+    Tiles type;
+    float alpha;
 
-    unsigned LoadTexture(const std::string& filename);
+    Tile(float x, float y, Tiles type, float alpha)
+        : x(x)
+        , y(y)
+        , type(type)
+        , alpha(alpha) {}
+  };
 
-private:
-    struct TTile {
-        float x;
-        float y;
-        ETileType type;
-        float alpha;
+  void InitWindow();
+  void InitOpenGL();
+  void InitTextures();
 
-        TTile(float x, float y, ETileType type, float alpha)
-            : x(x)
-            , y(y)
-            , type(type)
-            , alpha(alpha) {}
-    };
+  unsigned LoadTexture(const std::string& filename);
 
-    GLFWwindow* Window;
+  GLFWwindow* window_;
 
-    unsigned NextTextureIndex;
-    std::unordered_map<ETileType, unsigned> TileTextures;
-    unsigned WinTexture;
+  unsigned next_texture_index_;
+  std::unordered_map<Tiles, unsigned> tile_textures_;
+  unsigned win_texture_;
 
-    std::vector<TTile> Tiles;
-    bool WinMessage;
+  std::vector<Tile> tiles_;
+  bool win_message_;
 };
 
-TDisplay::TImpl::TImpl()
-    : NextTextureIndex(0)
-    , Tiles()
-    , WinMessage(false)
-{
-    InitWindow();
-    InitOpenGL();
-    InitTextures();
+Display::Impl::Impl()
+    : next_texture_index_(0)
+    , tiles_()
+    , win_message_(false) {
+  InitWindow();
+  InitOpenGL();
+  InitTextures();
 }
 
-TDisplay::TImpl::~TImpl() {
-    glfwDestroyWindow(Window);
-    glfwTerminate();
+Display::Impl::~Impl() {
+  glfwDestroyWindow(window_);
+  glfwTerminate();
 }
 
-void TDisplay::TImpl::InitWindow() {
-    if (!glfwInit()) {
-        throw std::runtime_error("GLFW: Initialization failed!");
-    }
+void Display::Impl::InitWindow() {
+  if (!glfwInit()) {
+      throw std::runtime_error("GLFW: Initialization failed!");
+  }
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_SAMPLES, 4);
-    Window = glfwCreateWindow(700, 700, "2048", NULL, NULL);
-    if (!Window) {
-        glfwTerminate();
-        throw std::runtime_error("GLFW: Window creation failed!");
-    }
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+  glfwWindowHint(GLFW_SAMPLES, 4);
+  window_ = glfwCreateWindow(700, 700, "2048", NULL, NULL);
+  if (!window_) {
+      glfwTerminate();
+      throw std::runtime_error("GLFW: window_ creation failed!");
+  }
 
-    glfwMakeContextCurrent(Window);
-    glfwSwapInterval(1);
+  glfwMakeContextCurrent(window_);
+  glfwSwapInterval(1);
 }
 
-void TDisplay::TImpl::InitOpenGL() {
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-    glDisable(GL_ALPHA_TEST);
-    glEnable(GL_TEXTURE_2D);
+void Display::Impl::InitOpenGL() {
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+  glDisable(GL_ALPHA_TEST);
+  glEnable(GL_TEXTURE_2D);
 #ifndef WIN32
-    glEnable(GL_MULTISAMPLE);
+  glEnable(GL_MULTISAMPLE);
 #endif
 }
 
-void TDisplay::TImpl::InitTextures() {
-    TileTextures[ETileType::TILE_1] = LoadTexture("data/1.png");
-    TileTextures[ETileType::TILE_2] = LoadTexture("data/2.png");
-    TileTextures[ETileType::TILE_4] = LoadTexture("data/4.png");
-    TileTextures[ETileType::TILE_8] = LoadTexture("data/8.png");
-    TileTextures[ETileType::TILE_16] = LoadTexture("data/16.png");
-    TileTextures[ETileType::TILE_32] = LoadTexture("data/32.png");
-    TileTextures[ETileType::TILE_64] = LoadTexture("data/64.png");
-    TileTextures[ETileType::TILE_128] = LoadTexture("data/128.png");
-    TileTextures[ETileType::TILE_256] = LoadTexture("data/256.png");
-    TileTextures[ETileType::TILE_512] = LoadTexture("data/512.png");
-    TileTextures[ETileType::TILE_1024] = LoadTexture("data/1024.png");
-    TileTextures[ETileType::TILE_2048] = LoadTexture("data/2048.png");
+void Display::Impl::InitTextures() {
+  tile_textures_[Tiles::kTile_1] = LoadTexture("data/1.png");
+  tile_textures_[Tiles::kTile_2] = LoadTexture("data/2.png");
+  tile_textures_[Tiles::kTile_4] = LoadTexture("data/4.png");
+  tile_textures_[Tiles::kTile_8] = LoadTexture("data/8.png");
+  tile_textures_[Tiles::kTile_16] = LoadTexture("data/16.png");
+  tile_textures_[Tiles::kTile_32] = LoadTexture("data/32.png");
+  tile_textures_[Tiles::kTile_64] = LoadTexture("data/64.png");
+  tile_textures_[Tiles::kTile_128] = LoadTexture("data/128.png");
+  tile_textures_[Tiles::kTile_256] = LoadTexture("data/256.png");
+  tile_textures_[Tiles::kTile_512] = LoadTexture("data/512.png");
+  tile_textures_[Tiles::kTile_1024] = LoadTexture("data/1024.png");
+  tile_textures_[Tiles::kTile_2048] = LoadTexture("data/2048.png");
 
-    WinTexture = LoadTexture("data/win.png");
+  win_texture_ = LoadTexture("data/win.png");
 }
 
-unsigned TDisplay::TImpl::LoadTexture(const std::string& filename) {
-    std::vector<unsigned char> image;
-    unsigned width, height;
-    unsigned error = lodepng::decode(image, width, height, filename);
-    if (error) {
-        throw std::runtime_error(std::string("LODEPNG: ") + lodepng_error_text(error));
-    }
+unsigned Display::Impl::LoadTexture(const std::string& filename) {
+  std::vector<unsigned char> image;
+  unsigned width, height;
+  unsigned error = lodepng::decode(image, width, height, filename);
+  if (error) {
+      throw std::runtime_error(std::string("LODEPNG: ") + lodepng_error_text(error));
+  }
 
-    unsigned textureId = NextTextureIndex++;
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
-    return textureId;
+  unsigned textureId = next_texture_index_++;
+  glBindTexture(GL_TEXTURE_2D, textureId);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+  return textureId;
 }
 
-void TDisplay::TImpl::DrawTile(float x, float y, ETileType type, float alpha) {
-    Tiles.emplace_back(x, y, type, alpha);
+void Display::Impl::DrawTile(float x, float y, Tiles type, float alpha) {
+  tiles_.emplace_back(x, y, type, alpha);
 }
 
-void TDisplay::TImpl::DrawWinMessage() {
-    WinMessage = true;
+void Display::Impl::DrawWinMessage() {
+  win_message_ = true;
 }
 
-bool TDisplay::TImpl::IsKeyPressed(EKey key) const {
-    switch (key) {
-        case EKey::KEY_UP:
-            return glfwGetKey(Window, GLFW_KEY_W) == GLFW_PRESS ||
-                   glfwGetKey(Window, GLFW_KEY_UP) == GLFW_PRESS;
-        case EKey::KEY_DOWN:
-            return glfwGetKey(Window, GLFW_KEY_S) == GLFW_PRESS ||
-                   glfwGetKey(Window, GLFW_KEY_DOWN) == GLFW_PRESS;
-        case EKey::KEY_LEFT:
-            return glfwGetKey(Window, GLFW_KEY_A) == GLFW_PRESS ||
-                   glfwGetKey(Window, GLFW_KEY_LEFT) == GLFW_PRESS;
-        case EKey::KEY_RIGHT:
-            return glfwGetKey(Window, GLFW_KEY_D) == GLFW_PRESS ||
-                   glfwGetKey(Window, GLFW_KEY_RIGHT) == GLFW_PRESS;
-        default:
-            return false;
-    }
+bool Display::Impl::IsKeyPressed(Keys key) const {
+  switch (key) {
+    case Keys::kKeyUp:
+      return glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS ||
+             glfwGetKey(window_, GLFW_KEY_UP) == GLFW_PRESS;
+    case Keys::kKeyDown:
+      return glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS ||
+             glfwGetKey(window_, GLFW_KEY_DOWN) == GLFW_PRESS;
+    case Keys::kKeyLeft:
+      return glfwGetKey(window_, GLFW_KEY_A) == GLFW_PRESS ||
+             glfwGetKey(window_, GLFW_KEY_LEFT) == GLFW_PRESS;
+    case Keys::kKeyRight:
+      return glfwGetKey(window_, GLFW_KEY_D) == GLFW_PRESS ||
+             glfwGetKey(window_, GLFW_KEY_RIGHT) == GLFW_PRESS;
+    default:
+      return false;
+  }
 }
 
-bool TDisplay::TImpl::Closed() const {
-    return glfwWindowShouldClose(Window);
+bool Display::Impl::Closed() const {
+  return glfwWindowShouldClose(window_);
 }
 
-void TDisplay::TImpl::ProcessEvents() {
-    glfwPollEvents();
+void Display::Impl::ProcessEvents() {
+  glfwPollEvents();
 }
 
-void TDisplay::TImpl::Render() {
-    int width, height;
-    glfwGetFramebufferSize(Window, &width, &height);
-    
-    glViewport(0, 0, width, height);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.5f, 1.0f, 0.83f, 1.0f);
+void Display::Impl::Render() {
+  int width, height;
+  glfwGetFramebufferSize(window_, &width, &height);
+  
+  glViewport(0, 0, width, height);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClearColor(0.5f, 1.0f, 0.83f, 1.0f);
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-0.5f, 3.5f, 3.5f, -0.5f, -1.0f, 1.0f);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(-0.5f, 3.5f, 3.5f, -0.5f, -1.0f, 1.0f);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
 
-    for (const auto& tile : Tiles) {
-        glBindTexture(GL_TEXTURE_2D, TileTextures[tile.type]);
-        glColor4f(1.0f, 1.0f, 1.0f, tile.alpha);
-        glBegin(GL_QUADS);
-        glTexCoord2f(0.0f,  1.0f);
-        glVertex2f(tile.y - 0.5f, tile.x + 0.5f);
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex2f(tile.y - 0.5f, tile.x - 0.5f);
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex2f(tile.y + 0.5f, tile.x - 0.5f);
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex2f(tile.y + 0.5f, tile.x + 0.5f);
-        glEnd(); 
-    }
+  for (const auto& tile : tiles_) {
+    glBindTexture(GL_TEXTURE_2D, tile_textures_[tile.type]);
+    glColor4f(1.0f, 1.0f, 1.0f, tile.alpha);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f,  1.0f);
+    glVertex2f(tile.y - 0.5f, tile.x + 0.5f);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2f(tile.y - 0.5f, tile.x - 0.5f);
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2f(tile.y + 0.5f, tile.x - 0.5f);
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2f(tile.y + 0.5f, tile.x + 0.5f);
+    glEnd(); 
+  }
 
-    if (WinMessage) {
-        glBindTexture(GL_TEXTURE_2D, WinTexture);
-        glColor4f(1.0f, 1.0f, 1.0f, 0.9f);
-        glBegin(GL_QUADS);
-        glTexCoord2f(0.0f,  1.0f);
-        glVertex2f(-0.5f, 3.5f);
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex2f(-0.5f, -0.5f);
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex2f(3.5f, -0.5f);
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex2f(3.5f, 3.5f);
-        glEnd();
-    }
+  if (win_message_) {
+    glBindTexture(GL_TEXTURE_2D, win_texture_);
+    glColor4f(1.0f, 1.0f, 1.0f, 0.9f);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f,  1.0f);
+    glVertex2f(-0.5f, 3.5f);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2f(-0.5f, -0.5f);
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2f(3.5f, -0.5f);
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2f(3.5f, 3.5f);
+    glEnd();
+  }
 
-    glfwSwapBuffers(Window);
+  glfwSwapBuffers(window_);
 
-    Tiles.clear();
-    WinMessage = false;
+  tiles_.clear();
+  win_message_ = false;
 }
 
-TDisplay::TDisplay()
-    : Impl(new TImpl()) {}
+Display::Display()
+    : impl_(new Impl()) {}
 
-TDisplay::~TDisplay() {}
+Display::~Display() {}
 
-void TDisplay::DrawTile(float x, float y, ETileType type, float alpha) {
-    Impl->DrawTile(x, y, type, alpha);
+void Display::DrawTile(float x, float y, Tiles type, float alpha) {
+  impl_->DrawTile(x, y, type, alpha);
 }
 
-void TDisplay::DrawWinMessage() {
-    Impl->DrawWinMessage();
+void Display::DrawWinMessage() {
+  impl_->DrawWinMessage();
 }
 
-double TDisplay::GetTime() const {
-    return glfwGetTime();
+double Display::GetTime() const {
+  return glfwGetTime();
 }
 
-bool TDisplay::IsKeyPressed(EKey key) const {
-    return Impl->IsKeyPressed(key);
+bool Display::IsKeyPressed(Keys key) const {
+  return impl_->IsKeyPressed(key);
 }
 
-bool TDisplay::Closed() const {
-    return Impl->Closed();
+bool Display::Closed() const {
+  return impl_->Closed();
 }
 
-void TDisplay::ProcessEvents() {
-    Impl->ProcessEvents();
+void Display::ProcessEvents() {
+  impl_->ProcessEvents();
 }
 
-void TDisplay::Render() {
-    Impl->Render();
+void Display::Render() {
+  impl_->Render();
 }

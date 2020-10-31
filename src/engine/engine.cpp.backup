@@ -1,0 +1,116 @@
+#include "display/display.h"
+#include "logic/logic.h"
+#include "engine/engine.h"
+
+#include <iostream>
+#include <chrono>
+
+static uint32_t CurrentTime() {
+  using namespace std::chrono;
+  milliseconds ms = duration_cast< milliseconds >(
+      system_clock::now().time_since_epoch()
+  );
+  return ms.count();
+}
+
+Keys Engine::GetPressedKey() {
+  if (display_.IsKeyPressed(Keys::kKeyLeft))
+    return Keys::kKeyLeft;
+  if (display_.IsKeyPressed(Keys::kKeyRight))
+    return Keys::kKeyRight;
+  if (display_.IsKeyPressed(Keys::kKeyUp))
+    return Keys::kKeyUp;
+  if (display_.IsKeyPressed(Keys::kKeyDown))
+    return Keys::kKeyDown;
+  return Keys::kNoKey;
+}
+
+void Engine::Move(Keys key) {
+  switch (key) {
+    case Keys::kKeyLeft:
+      logic_.MoveLeft();
+      break;
+    case Keys::kKeyRight:
+      logic_.MoveRight();
+      break;
+    case Keys::kKeyUp:
+      logic_.MoveUp();
+      break;
+    case Keys::kKeyDown:
+      logic_.MoveDown();
+      break;
+    default:
+      break;
+  }
+}
+
+void Engine::Draw() {
+    for (uint32_t i = 0; i < logic_.GetLength(); i++)
+      for (uint32_t j = 0; j < logic_.GetLength(); j++) {
+        Tiles tile = logic_.GetTile(i, j);
+        if (tile != Tiles::kNoTile)
+          display_.DrawTile(i, j, tile);
+      }
+}
+
+void Engine::Turn(Keys &key_pressed, uint32_t &old_time) {
+  if (key_pressed != Keys::kNoKey && CurrentTime() - old_time > 500)
+    key_pressed = Keys::kNoKey;
+  if (display_.IsKeyPressed(key_pressed))
+    return;
+  key_pressed = GetPressedKey();
+  Move(key_pressed);
+  if (logic_.IsGameOver()) {
+    state_ = (logic_.IsSuccess() ? States::kSuccess : States::kFail);
+  } else if (key_pressed != Keys::kNoKey) {
+    logic_.NewTile();
+    old_time = CurrentTime();
+  }
+}
+
+void Engine::MainLoop() {
+  uint32_t old_time = CurrentTime();
+  Keys key_pressed = Keys::kNoKey;
+  while (!display_.Closed()) {
+    display_.ProcessEvents();
+    switch (state_) {
+      case States::kGame:
+        Turn(key_pressed, old_time);
+        break;
+      case States::kSuccess:
+        display_.DrawWinMessage();
+        break;
+      case States::kFail:
+      default:
+        break;
+    }
+    Draw();
+    display_.Render();
+  }
+}
+
+    // Example: draw tiles
+#if 0
+    display.DrawTile(1, 3, Tiles::kTile_128, 0.8);
+
+    // Example: you can draw tile at intermediate point to make animation
+    double elapsed_time = display.GetTime() - old_time;
+    old_time = display.GetTime();
+    if (display.IsKeyPressed(Keys::kKeyLeft)) {
+        y -= 2 * elapsed_time;
+        if (y < -1.5) {
+            y = -1.5;
+        }
+    } else if (display.IsKeyPressed(Keys::kKeyRight)) {
+        y += 2 * elapsed_time;
+        if (y > 1.5) {
+            y = 1.5;
+        }
+    }
+    display.DrawTile(3, 1.5 + y, Tiles::kTile_64);
+
+    // Example: win message
+    if (y < -1 || y > 1) {
+        display.DrawWinMessage();
+    }
+#endif

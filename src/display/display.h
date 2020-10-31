@@ -2,52 +2,54 @@
 
 #include <memory>
 
-enum class ETileType {
-    TILE_1,
-    TILE_2,
-    TILE_4,
-    TILE_8,
-    TILE_16,
-    TILE_32,
-    TILE_64,
-    TILE_128,
-    TILE_256,
-    TILE_512,
-    TILE_1024,
-    TILE_2048,
+enum class Tiles {
+  kNoTile,
+  kTile_1,
+  kTile_2,
+  kTile_4,
+  kTile_8,
+  kTile_16,
+  kTile_32,
+  kTile_64,
+  kTile_128,
+  kTile_256,
+  kTile_512,
+  kTile_1024,
+  kTile_2048,
 };
 
-enum class EKey {
-    KEY_UP,
-    KEY_DOWN,
-    KEY_LEFT,
-    KEY_RIGHT,
+enum class Keys {
+  kNoKey,
+  kKeyUp,
+  kKeyDown,
+  kKeyLeft,
+  kKeyRight,
 };
 
 namespace std {
-    template<>
-    struct hash<ETileType> {
-        size_t operator()(const ETileType& tile) const {
-             return static_cast<size_t>(tile);
-        }
-    };
+  template<>
+  struct hash<Tiles> {
+    size_t operator()(const Tiles& tile) const {
+      return static_cast<size_t>(tile);
+    }
+  };
 }
 
-class TDisplay {
-public:
-    TDisplay();
-    virtual ~TDisplay();
+class Display {
+ public:
+  Display();
+  virtual ~Display();
 
-    void DrawTile(float x, float y, ETileType type, float alpha = 1.0f);
-    void DrawWinMessage();
+  void DrawTile(float x, float y, Tiles type, float alpha = 1.0f);
+  void DrawWinMessage();
 
-    double GetTime() const;
-    bool IsKeyPressed(EKey key) const;
-    bool Closed() const;
-    void ProcessEvents();
-    void Render();
+  double GetTime() const;
+  bool IsKeyPressed(Keys key) const;
+  bool Closed() const;
+  void ProcessEvents();
+  void Render();
 
-private:
-    class TImpl;
-    std::unique_ptr<TImpl> Impl;
+ private:
+  class Impl;
+  std::unique_ptr<Impl> impl_;
 };
