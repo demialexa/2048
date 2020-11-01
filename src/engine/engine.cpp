@@ -42,7 +42,8 @@ void Engine::Turn() {
   if (key_pressed_ == Keys::kNoKey)
     return;
   Move();
-  logic_.NewTile();
+  if (logic_.HasSomethingChanged())
+    logic_.NewTile();
   state_ = States::kMoving;
   const std::vector<std::vector<Logic::TileInfo>>&
       logic_matrix = logic_.GetMatrix();

@@ -203,3 +203,14 @@ void Logic::ResetStates() {
     }
   }
 }
+
+bool Logic::HasSomethingChanged() const {
+  for (const auto& row : tile_matrix_) {
+    for (const auto& tile : row) {
+      if (tile.state == TileStates::kMoving
+          || tile.state == TileStates::kMerging)
+        return true;
+    }
+  }
+  return false;
+}

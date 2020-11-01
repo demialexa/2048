@@ -64,6 +64,7 @@ class Logic {
   void MoveUp();
   void MoveDown();
   void ResetStates();
+  bool HasSomethingChanged() const;
 
  private:
   void Transpose();
